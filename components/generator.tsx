@@ -19,6 +19,7 @@ function toDatetimeLocal(unix: number) {
 }
 
 export function Generator() {
+  const [mounted, setMounted] = useState(false)
   const [owner, setOwner] = useState("Any")
   const [init, setInit] = useState("")
   const [expLocal, setExpLocal] = useState("")
@@ -32,6 +33,7 @@ export function Generator() {
     setInit(toDateInput(created))
     setExpLocal(toDatetimeLocal(defaultExp))
     setLicenseId(String(created))
+    setMounted(true)
   }, [])
   const [presetId, setPresetId] = useState("license_id")
   const [infoTemplate, setInfoTemplate] = useState(PLAINTEXT_PRESETS[0].template)
@@ -78,6 +80,14 @@ export function Generator() {
     const n = nowUnix()
     setLicenseId(String(n))
     setInit(toDateInput(n))
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex min-h-64 items-center justify-center rounded-xl border border-dashed border-border bg-card/40 p-8 text-sm text-muted-foreground">
+        Cargando generador…
+      </div>
+    )
   }
 
   return (
