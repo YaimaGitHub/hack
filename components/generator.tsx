@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { generateLicense, type GenerateResult } from "@/app/actions"
 import { PLAINTEXT_PRESETS } from "@/lib/license"
 import { Field, inputClass, selectClass } from "./field"
@@ -19,14 +19,20 @@ function toDatetimeLocal(unix: number) {
 }
 
 export function Generator() {
-  const created = nowUnix()
-  // Por defecto: expira en 1 año.
-  const defaultExp = created + 365 * 24 * 3600
-
   const [owner, setOwner] = useState("Any")
-  const [init, setInit] = useState(toDateInput(created))
-  const [expLocal, setExpLocal] = useState(toDatetimeLocal(defaultExp))
-  const [licenseId, setLicenseId] = useState(String(created))
+  const [init, setInit] = useState("")
+  const [expLocal, setExpLocal] = useState("")
+  const [licenseId, setLicenseId] = useState("")
+
+  // Los valores basados en la hora actual se rellenan tras el montaje
+  // para evitar desajustes de hidratación entre servidor y cliente.
+  useEffect(() => {
+    const created = nowUnix()
+    const defaultExp = created + 365 * 24 * 3600
+    setInit(toDateInput(created))
+    setExpLocal(toDatetimeLocal(defaultExp))
+    setLicenseId(String(created))
+  }, [])
   const [presetId, setPresetId] = useState("license_id")
   const [infoTemplate, setInfoTemplate] = useState(PLAINTEXT_PRESETS[0].template)
   const [codeTemplate, setCodeTemplate] = useState("{license_id}-{i}")
