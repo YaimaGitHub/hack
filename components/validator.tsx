@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { validateLicense, type ValidateResult } from "@/app/actions"
 import { PLAINTEXT_PRESETS } from "@/lib/license"
 import { Field, inputClass, selectClass } from "./field"
@@ -16,11 +16,22 @@ export function Validator() {
   const [init, setInit] = useState("2025-10-21")
   const [qty, setQty] = useState("360000")
   const [licenseId, setLicenseId] = useState("1777573127")
-  const [template, setTemplate] = useState(PLAINTEXT_PRESETS[0].template)
+  const [template, setTemplate] = useState(
+    PLAINTEXT_PRESETS.find((p) => p.id === "license_qty")?.template ?? "{license_id}{qty}",
+  )
 
   const [hash, setHash] = useState("")
   const [result, setResult] = useState<ValidateResult | null>(null)
   const [pending, startTransition] = useTransition()
+
+  // Estado de expiración basado en qty (timestamp Unix de expiración).
+  const expiry = useMemo(() => {
+    const ts = Number(qty)
+    if (!ts || Number.isNaN(ts)) return null
+    const expDate = new Date(ts * 1000)
+    const expired = ts * 1000 < Date.now()
+    return { expDate, expired }
+  }, [qty])
 
   function onValidate() {
     startTransition(async () => {
@@ -144,6 +155,17 @@ export function Validator() {
             <p className="text-lg font-semibold text-foreground">
               {result.valid ? "Licencia VÁLIDA" : "Licencia NO válida"}
             </p>
+            {result.valid && mode === "fields" && expiry ? (
+              <p
+                className={`mt-2 inline-flex rounded-md border px-2.5 py-1 text-xs font-medium ${
+                  expiry.expired
+                    ? "border-destructive/50 bg-destructive/10 text-destructive-foreground"
+                    : "border-primary/40 bg-primary/10 text-foreground"
+                }`}
+              >
+                {expiry.expired ? "CADUCADA" : "Activa"} — expira {expiry.expDate.toUTCString()}
+              </p>
+            ) : null}
             <p className="mt-2 text-sm text-muted-foreground">Texto plano comprobado:</p>
             <code className="mt-1 block break-all font-mono text-sm text-foreground">{result.usedPlaintext}</code>
           </div>

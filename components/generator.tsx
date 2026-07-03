@@ -35,10 +35,15 @@ export function Generator() {
     setLicenseId(String(created))
     setMounted(true)
   }, [])
-  const [presetId, setPresetId] = useState("license_id")
-  const [infoTemplate, setInfoTemplate] = useState(PLAINTEXT_PRESETS[0].template)
-  const [codeTemplate, setCodeTemplate] = useState("{license_id}-{i}")
-  const [codeCount, setCodeCount] = useState(7)
+  // Fórmula por defecto que INCLUYE la expiración (qty), de modo que la fecha
+  // a la que la licencia debe validarse queda firmada dentro del hash.
+  const LICENSE_QTY_TEMPLATE =
+    PLAINTEXT_PRESETS.find((p) => p.id === "license_qty")?.template ?? "{license_id}{qty}"
+  const [presetId, setPresetId] = useState("license_qty")
+  const [infoTemplate, setInfoTemplate] = useState(LICENSE_QTY_TEMPLATE)
+  const [codeTemplate, setCodeTemplate] = useState(LICENSE_QTY_TEMPLATE)
+  // Una sola licencia/código con la fecha establecida (no varios).
+  const [codeCount, setCodeCount] = useState(1)
   const [prefix, setPrefix] = useState<"$2y$" | "$2b$" | "$2a$">("$2y$")
   const [rounds, setRounds] = useState(10)
 
